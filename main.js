@@ -82,3 +82,148 @@ function viewTodo(todoArray) {
 	}
 	counter.textContent = itemCount();
 }
+function EditTodo(event) {
+	// console.log(e.target);
+	if (event.target.tagName === "P") {
+		let currentP = event.target;
+		let editInput = document.createElement("input");
+		editInput.classList.add("edit_input");
+		editInput.value = currentP.textContent;
+		currentP.parentElement.replaceChild(editInput, currentP);
+		editInput.parentElement.classList.remove("li_styles");
+		editInput.parentElement.classList.add("li_styles_input");
+		editInput.addEventListener("keydown", event1 => {
+			if (event1.keyCode === 13 && event1.target.value != "") {
+				editInput.parentElement.classList.add("li_styles");
+				editInput.parentElement.classList.remove("li_styles_input");
+				currentP.textContent = editInput.value;
+				editInput.parentElement.replaceChild(currentP, editInput);
+				let arr = state;
+				arr.map(todo => {
+					if (todo.id == currentP.parentElement.dataset.index) {
+						todo.name = currentP.textContent;
+					}
+				});
+				localStorage.setItem("todoArr", JSON.stringify(arr));
+				console.log(arr);
+				viewTodo(arr);
+			}
+		});
+	}
+}
+function deleteTodo(event) {
+	if (event.target.tagName == "SPAN") {
+		let target = event.target;
+		state = state.filter(todo => !(target.dataset.key == todo.id));
+
+		state.forEach(i => {
+			if (i.isDone == true) {
+				clearCompleted.classList.remove("item_completed");
+				clearCompleted.classList.add("item_completed_1");
+			} else {
+				clearCompleted.classList.remove("item_completed_1");
+				clearCompleted.classList.add("item_completed");
+			}
+		});
+
+		localStorage.setItem("todoArr", JSON.stringify(state));
+
+		viewTodo(state);
+	}
+}
+
+function handleCheck(id) {
+	let len = 0;
+	let checked = state.map(item => {
+		if (item.id == id) {
+			len++;
+			item.isDone = !item.isDone;
+
+			if (item.isDone == true) {
+				clearCompleted.classList.remove("item_completed");
+				clearCompleted.classList.add("item_completed_1");
+			} else {
+				clearCompleted.classList.remove("item_completed_1");
+				clearCompleted.classList.add("item_completed");
+			}
+			return item;
+		} else return item;
+	});
+	localStorage.setItem("todoArr", JSON.stringify(checked));
+	viewTodo(checked);
+	itemCount(len);
+}
+function itemCount() {
+	let arr = state.filter(todo => todo.isDone == false);
+	return arr.length;
+}
+function toggleAllInput() {
+	let arr = state;
+	let flag;
+	arr.filter(todo => {
+		if (todo.isDone == false) {
+			todo.isDone = true;
+			flag = 1;
+		}
+	});
+	localStorage.setItem("todoArr", JSON.stringify(arr));
+	viewTodo(arr);
+	if (flag != 1) {
+		arr.filter(todo => {
+			if (todo.isDone == true) {
+				todo.isDone = false;
+				flag = 0;
+			}
+		});
+	}
+	localStorage.setItem("todoArr", JSON.stringify(arr));
+	viewTodo(arr);
+}
+function allStatus() {
+	allButton.classList.add("button_border");
+	completedButton.classList.remove("button_border");
+	activeButton.classList.remove("button_border");
+	viewTodo(state);
+}
+function activeStatus() {
+	allButton.classList.remove("button_border");
+	completedButton.classList.remove("button_border");
+	activeButton.classList.add("button_border");
+	let arr = state.filter(i => i.isDone == false);
+	viewTodo(arr);
+	footerList.style.display = "block";
+}
+function completedStatus() {
+	allButton.classList.remove("button_border");
+	activeButton.classList.remove("button_border");
+	completedButton.classList.add("button_border");
+	let arr = state.filter(todo => todo.isDone == true);
+	viewTodo(arr);
+	footerList.style.display = "block";
+}
+function clearStatus() {
+	let arr = state.filter(todo => todo.isDone == false);
+	arr.forEach(todo => {
+		if (todo.isDone == true) {
+			clearCompleted.classList.remove("item_completed");
+			clearCompleted.classList.add("item_completed_1");
+		} else {
+			clearCompleted.classList.remove("item_completed_1");
+			clearCompleted.classList.add("item_completed");
+		}
+	});
+	localStorage.setItem("todoArr", JSON.stringify(arr));
+	state = arr;
+	viewTodo(state);
+}
+
+viewTodo(state);
+
+input.addEventListener("keydown", AddState);
+ul.addEventListener("click", deleteTodo);
+activeButton.addEventListener("click", activeStatus);
+allButton.addEventListener("click", allStatus);
+allButton.classList.add("button_border");
+completedButton.addEventListener("click", completedStatus);
+clearCompleted.addEventListener("click", clearStatus);
+toggleAll.addEventListener("click", toggleAllInput);
